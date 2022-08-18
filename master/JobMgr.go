@@ -125,7 +125,7 @@ func (jobMgr *JobMgr) ListJobs() (jobList []*common.Job, err error) {
 	dirKey = common.JOB_SAVE_DIR
 
 	// 获取目录下所有任务信息
-	if getResp, err = jobMgr.kv.Get(context.TODO(), dirKey, clientv3.WithPrefix()); err != nil {
+	if getResp, err = jobMgr.kv.Get(context.TODO(), dirKey, clientv3.WithPrefix(), clientv3.WithSort(clientv3.SortByModRevision, clientv3.SortDescend)); err != nil {
 		return
 	}
 
