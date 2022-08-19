@@ -77,7 +77,12 @@ func (scheduler *Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 
 // 处理任务结果
 func (scheduler *Scheduler) handleJobResult(result *JobExecuteResult) {
-	fmt.Println("任务执行完成", string(result.Output))
+	if result.Err == nil {
+		fmt.Println("任务执行完成", string(result.Output))
+	} else {
+		fmt.Println("任务执行失败", result.Err)
+	}
+
 	result.ExecutorInfo.Running = false       // 本次调度完成
 	fmt.Println(result.ExecutorInfo.PlanTime) // 获取计划调度时间
 	fmt.Println(result.ExecutorInfo.RealTime) // 真实执行的时间

@@ -2,6 +2,8 @@ module github.com/NetLops/cocrontab
 
 go 1.17
 
+require github.com/pkg/errors v0.9.1
+
 require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect

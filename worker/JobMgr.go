@@ -120,6 +120,8 @@ func InitJobMgr() (err error) {
 		lease:   lease,
 		watcher: watcher,
 	}
+	// 启动任务监听
+	G_jobMgr.WatchJobs()
 	return
 
 }

@@ -57,12 +57,10 @@ func main() {
 		goto ERR
 	}
 
-	// 启动任务监听
-	worker.G_jobMgr.WatchJobs()
-	// 正常退出
 	for {
-		time.Sleep(1 * time.Second)
+		time.Sleep(time.Second * 1)
 	}
+	// 正常退出
 	return
 ERR:
 	fmt.Println(err)
