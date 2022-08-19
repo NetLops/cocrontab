@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"math/rand"
 	"os/exec"
 	"runtime"
 	"time"
@@ -30,6 +31,8 @@ func (e *Executor) ExecuteJob(info *JobSchedulePlan) {
 		}
 		result.StartTime = time.Now()
 
+		// 随机睡眠，保证CPU不过于倾斜（解决一个服务器总是抢到同一把锁）
+		time.Sleep(time.Duration(rand.Intn(500)) * time.Millisecond)
 		// 执行获取分布式锁 TODO 可能有点小BUG 闲得蛋痛再修
 		jobLock = G_jobMgr.CreateJobLock(info.Job.Name)
 		// 任务执行后释放锁

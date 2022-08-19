@@ -4,5 +4,24 @@
 
 
   "etcd的连接超时": "单位毫秒",
-  "etcdDialTimeout": 5000
+  "etcdDialTimeout": 5000,
+
+  "mongoDB standalone uri": "mongoDB 单机模式的uri",
+  "mongoDBUri": "mongodb://82.157.193.4:27017",
+
+  "mongoDB Username": "用户名",
+  "mongoDBUsername": "admin",
+
+  "mongoDB Password": "密码",
+  "mongoDBPassword": "123456ab12345@",
+
+  "mongoDB 超时时间": "毫秒",
+  "mongoDBTimeout": 5000,
+
+  "日志批次大小": "为了减小mongodb网络往返，打包成一批写入",
+  "jobLogBatchSize": 100,
+
+  "日志自动提交超时": "在批次为达到阈值之前，超时会自动提交batch",
+  "jobLogCommitTimeout": 1000
+
 }

@@ -76,3 +76,20 @@ func BuildJobEvent(eventType int, job *Job) (jobEvent *JobEvent) {
 		Job:       job,
 	}
 }
+
+// 任务执行日志
+type JobLog struct {
+	JobName      string `bson:"jobName"`      // 任务的名字
+	Command      string `bson:"command"`      // 脚本命令
+	Err          string `bson:"err"`          // 错误原因
+	Output       string `bson:"output"`       // 脚本输出
+	PlanTime     int64  `bson:"planTime"`     // 计划开始时间
+	ScheduleTime int64  `bson:"scheduleTime"` // 世纪调度时间
+	StartTime    int64  `bson:"startTime"`    // 任务执行开始时间
+	EndTime      int64  `bson:"endTime"`      // 任务执行结束时间
+}
+
+// 日志批次
+type LogBatch struct {
+	Logs []interface{} // 多条日志
+}

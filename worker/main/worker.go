@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/NetLops/cocrontab/worker"
+	"math/rand"
 	"runtime"
 	"time"
 )
@@ -19,6 +20,9 @@ func initArgs() {
 	// worker -h
 	flag.StringVar(&confFile, "config", "./worker.json", "指定worker.json")
 	flag.Parse()
+
+	// 初始化随机数
+	rand.Seed(time.Now().UnixNano())
 }
 
 // 初始化线程数量
@@ -40,6 +44,11 @@ func main() {
 
 	// 加载配置
 	if err = worker.InitConfig(confFile); err != nil {
+		goto ERR
+	}
+
+	// 启动日志协程
+	if err = worker.InitLogSink(); err != nil {
 		goto ERR
 	}
 

@@ -85,7 +85,7 @@ func (jobLock *JobLock) TryLock() (err error) {
 		Then(clientv3.OpPut(lockKey, "", clientv3.WithLease(leaseId))).
 		Else()
 
-	// 题阿娇事务
+	// 提交事务
 	if txnResp, err = txn.Commit(); err != nil {
 		goto FAIL
 	}

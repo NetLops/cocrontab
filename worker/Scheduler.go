@@ -85,17 +85,41 @@ func (scheduler *Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 }
 
 // 处理任务结果
+// 记得调度完成 呜呜// result.ExecutorInfo.Running 会影响调度
 func (scheduler *Scheduler) handleJobResult(result *JobExecuteResult) {
+	var (
+		jobLog *common.JobLog
+	)
+	// 被锁占用就直接跳过了
+	if result.Err == common.ERR_LOCK_ALREADY_REQUIRED || (result.Err != nil && result.Err.Error() == "context canceled") {
+		result.ExecutorInfo.Running = false // 本次调度完成
+		result.ExecutorInfo.PlanTime = result.ExecutorInfo.GetEntityByEntityId().Next
+		return
+	}
+	jobLog = &common.JobLog{
+		JobName: result.ExecutorInfo.Job.Name,
+		Command: result.ExecutorInfo.Job.Command,
+		//Output:       string(),
+		PlanTime:     result.ExecutorInfo.PlanTime.UnixMilli(),
+		ScheduleTime: result.ExecutorInfo.RealTime.UnixMilli(),
+		StartTime:    result.StartTime.UnixMilli(),
+		EndTime:      result.EndTime.UnixMilli(),
+	}
+	if result.Output != nil {
+		jobLog.Output = string(result.Output)
+	}
 	if result.Err == nil {
 		fmt.Println("任务执行完成", string(result.Output))
+		jobLog.Err = ""
 	} else {
 		fmt.Println("任务执行失败", result.Err)
+		jobLog.Err = result.Err.Error()
 	}
-
 	result.ExecutorInfo.Running = false       // 本次调度完成
 	fmt.Println(result.ExecutorInfo.PlanTime) // 获取计划调度时间
 	fmt.Println(result.ExecutorInfo.RealTime) // 真实执行的时间
 	result.ExecutorInfo.PlanTime = result.ExecutorInfo.GetEntityByEntityId().Next
+	G_LogSink.Append(jobLog) // 日志防止堵塞，写不进去会被丢
 }
 
 // 调度协程

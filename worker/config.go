@@ -7,8 +7,14 @@ import (
 
 // 程序配置
 type Config struct {
-	EtcdEndpoints   []string `json:"etcdEndpoints"`
-	EtcdDialTimeout int      `json:"etcdDialTimeout"`
+	EtcdEndpoints       []string `json:"etcdEndpoints"`
+	EtcdDialTimeout     int      `json:"etcdDialTimeout"`
+	MongoDBUri          string   `json:"mongoDBUri"`          // mongoDB uri地址
+	MongoDBUsername     string   `json:"mongoDBUsername"`     // mongoDB 用户名
+	MongoDBPassword     string   `json:"mongoDBPassword"`     // mongoDB 密码
+	MongoDBTimeout      int      `json:"mongoDBTimeout"`      // mongoDB 连接超时时间
+	JobLogBatchSize     int      `json:"jobLogBatchSize"`     // mongoDB 需要打包的日志批次大小
+	JobLogCommitTimeout int      `json:"jobLogCommitTimeout"` // mongoDB log 超时之前未提交会自动提交
 }
 
 var (
