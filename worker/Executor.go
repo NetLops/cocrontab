@@ -1,7 +1,6 @@
 package worker
 
 import (
-	"context"
 	"os/exec"
 	"runtime"
 	"time"
@@ -45,9 +44,9 @@ func (e *Executor) ExecuteJob(info *JobSchedulePlan) {
 			// 执行shell命令
 			// 判断一手是那个系统
 			if runtime.GOOS == "windows" {
-				cmd = exec.CommandContext(context.TODO(), "c:\\cygwin64\\bin\\bash.exe", "-c", info.Job.Command)
+				cmd = exec.CommandContext(info.CancelCtx, "c:\\cygwin64\\bin\\bash.exe", "-c", info.Job.Command)
 			} else {
-				cmd = exec.CommandContext(context.TODO(), "/bin/bash", "-c", info.Job.Command)
+				cmd = exec.CommandContext(info.CancelCtx, "/bin/bash", "-c", info.Job.Command)
 			}
 
 			// 执行并捕获输出

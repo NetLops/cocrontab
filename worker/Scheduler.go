@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"context"
 	"fmt"
 	"github.com/NetLops/cocrontab/common"
 	"github.com/robfig/cron/v3"
@@ -45,8 +46,8 @@ func (scheduler *Scheduler) TryStartJob(jobPlan *JobSchedulePlan) {
 func (scheduler *Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 	var (
 		jobSchedulePlan *JobSchedulePlan
-		//jobExisted      bool
-		err error
+		jobExisted      bool // 强杀出现的
+		err             error
 	)
 
 	switch jobEvent.EventType {
@@ -71,6 +72,14 @@ func (scheduler *Scheduler) handleJobEvent(jobEvent *common.JobEvent) {
 		if cronId, ok := scheduler.jobNameToCronIDMap[jobEvent.Job.Name]; ok {
 			scheduler.jobPlanCron.Remove(cronId)
 			delete(scheduler.jobNameToCronIDMap, jobEvent.Job.Name)
+		}
+	case common.JOB_EVENT_KILL: // 强杀任务事件
+		// 取消掉Command执行，判断任务是否在执行中
+		if cronId, ok := scheduler.jobNameToCronIDMap[jobEvent.Job.Name]; ok {
+			if jobSchedulePlan, jobExisted = scheduler.jobPlanCron.Entry(cronId).Job.(*JobSchedulePlan); jobExisted {
+				jobSchedulePlan.CancelCtxCancelFunc() // 触发command 杀死子进程, 任务得到退出
+				fmt.Println("子进程死亡")
+			}
 		}
 	}
 }
@@ -110,6 +119,7 @@ func (scheduler *Scheduler) scheduleLoop() {
 			scheduler.handleJobEvent(jobEvent)
 		case jobResult = <-scheduler.jobResultChan: // 监听任务执行结果
 			scheduler.handleJobResult(jobResult)
+
 		}
 	}
 }
@@ -148,6 +158,8 @@ type JobSchedulePlan struct {
 	Running             bool      // 是否是运行的, 保证再一次运行中不会出现二次
 	PlanTime            time.Time // 计划调度时间
 	RealTime            time.Time // 真实调度时间
+	CancelCtx           context.Context
+	CancelCtxCancelFunc context.CancelFunc
 	GetEntityByEntityId func() cron.Entry
 }
 
@@ -186,6 +198,7 @@ func BuildJobSchedulePlain(job *common.Job) (jobSchedulePlan *JobSchedulePlan, e
 		Job:  job,
 		Expr: expr,
 	}
+	jobSchedulePlan.CancelCtx, jobSchedulePlan.CancelCtxCancelFunc = context.WithCancel(context.TODO())
 	return
 
 }

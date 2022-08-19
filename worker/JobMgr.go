@@ -87,6 +87,42 @@ func (jobMgr *JobMgr) WatchJobs() (err error) {
 	return
 }
 
+// 监听强杀任务通知
+func (jobMgr *JobMgr) WatchKiller() {
+
+	var (
+		watchChan clientv3.WatchChan
+		watchResp clientv3.WatchResponse
+		jobEvent  *common.JobEvent
+		jobName   string
+		job       *common.Job
+	)
+
+	// 从该revision向后监听变化事件
+	go func() { // 监听协程
+
+		// 监听/cron/killer/目录的后续便哈
+		watchChan = jobMgr.watcher.Watch(context.TODO(), common.JOB_KILLER_DIR, clientv3.WithPrefix())
+
+		// 处理监听事件
+		for watchResp = range watchChan {
+			for _, watchEvent := range watchResp.Events {
+				switch watchEvent.Type {
+				case mvccpb.PUT: // 杀死某个任务的事件
+					jobName = common.ExtraKillerName(string(watchEvent.Kv.Key)) //cron/killer/job*
+					job = &common.Job{Name: jobName}
+					jobEvent = common.BuildJobEvent(common.JOB_EVENT_KILL, job)
+					G_Scheduler.PushJobEvent(jobEvent)
+				case mvccpb.DELETE: // killer标记过期，被自动删除
+				}
+
+				//fmt.Println(*jobEvent)
+			}
+		}
+	}()
+	return
+}
+
 // 初始化
 func InitJobMgr() (err error) {
 	var (
@@ -122,6 +158,9 @@ func InitJobMgr() (err error) {
 	}
 	// 启动任务监听
 	G_jobMgr.WatchJobs()
+
+	// 启动监听killer
+	G_jobMgr.WatchKiller()
 	return
 
 }
